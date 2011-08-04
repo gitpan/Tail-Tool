@@ -14,7 +14,7 @@ use English qw/ -no_match_vars /;
 use Path::Class;
 use AnyEvent;
 
-our $VERSION     = version->new('0.1.0');
+our $VERSION     = version->new('0.2.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -44,6 +44,7 @@ has pid => (
 has handle => (
     is            => 'rw',
     isa           => 'FileHandle',
+    clearer       => 'clear_handle',
     documentation => 'The opened filehandle of name',
 );
 has size => (
@@ -157,13 +158,15 @@ sub get_line {
         my $size = -s $self->name;
         if ( $size < $self->size ) {
             warn $self->name . " was truncated!\n";
-            seek $fh, 0, 0;
+            close $fh;
+            $self->clear_handle;
+            $fh = $self->_get_file_handle;
         }
         else {
             # reset file handle
             seek $fh, 0, 1;
         }
-        $self->size($size);
+        $self->size($size || 0);
     }
 
     my @lines = <$fh>;
@@ -191,7 +194,7 @@ sub _get_file_handle {
             my $cmd = sprintf "ssh %s$host %s 'tail -f -n %d %s'",
                ( $user         ? "$user\@"            : '' ),
                ( $port         ? "-P $port"           : '' ),
-               ( $self->parent ? $self->parent->lines : 10 ),
+               ( $self->tailer ? $self->tailer->lines : 10 ),
                _shell_quote($file);
 
             if ( my $pid = open $fh, '|-', $cmd ) {
@@ -236,7 +239,7 @@ Tail::Tool::File - Looks after individual files
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::File version 0.1.0.
+This documentation refers to Tail::Tool::File version 0.2.0.
 
 =head1 SYNOPSIS
 

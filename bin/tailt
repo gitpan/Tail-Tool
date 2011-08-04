@@ -21,12 +21,12 @@ use Path::Class;
 use Tail::Tool;
 use Term::Spinner;
 use AnyEvent;
-use EV;
+use AnyEvent::Impl::Perl;
 use IO::Prompt qw/prompt/;
 use TryCatch;
 use YAML qw/LoadFile DumpFile Dump/;
 
-our $VERSION = version->new('0.1.0');
+our $VERSION = version->new('0.2.0');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 my $spinner = Term::Spinner->new();
 
@@ -112,7 +112,7 @@ sub main {
 
     $tt->tail();
 
-    EV::loop;
+    AnyEvent::Impl::Perl::loop;
 
     return;
 }
@@ -146,18 +146,23 @@ sub restart {
 $plugins
  f  Change tailed files ($files)
  r  Resume tailing
+ c  Clear screen and resume tailing
  l  Load Config
  s  Save Config
  b  Shell out
  q  Quit
 MENU
 
-    my $answer = prompt_menu( 1 .. $i, qw/f r l s q Q/ );
+    my $answer = prompt_menu( 1 .. $i, qw/f r c l s q Q/ );
 
     if ( $answer eq 'f' ) {
         update_files();
     }
     elsif ( $answer eq 'r' ) {
+        return 1;
+    }
+    elsif ( $answer eq 'c' ) {
+        print "\n" x 2_000;
         return 1;
     }
     elsif ( $answer eq 'l' ) {
@@ -174,6 +179,9 @@ MENU
     }
 
     exit if !defined $answer || $answer eq '' || lc $answer eq 'q';
+
+    # reinstall interupt handler
+    $restart->{int} = AE::signal INT => \&restart;
 
     return restart();
 }
@@ -239,7 +247,7 @@ MENU
         my $new_file = prompt("New file name : ", '-tty') . '';
 
         my $file = Tail::Tool::File->new( name => $new_file );
-        $file->parent($tt);
+        $file->tailer($tt);
         push @{ $tt->files }, $file;
         $tt->tail( 1 );
     }
@@ -637,7 +645,7 @@ tailt - Tail files using the Tail::Tool library
 
 =head1 VERSION
 
-This documentation refers to tailt version 0.1.0.
+This documentation refers to tailt version 0.2.0.
 
 =head1 SYNOPSIS
 

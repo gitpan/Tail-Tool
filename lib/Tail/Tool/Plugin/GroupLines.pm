@@ -14,11 +14,12 @@ use List::Util;
 #use List::MoreUtils;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
+use AnyEvent;
 
 extends 'Tail::Tool::PreProcess';
 with 'Tail::Tool::RegexList';
 
-our $VERSION     = version->new('0.1.0');
+our $VERSION     = version->new('0.2.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -27,9 +28,14 @@ has end => (
     is   => 'rw',
     isa  => 'Bool',
 );
+has allow_empty => (
+    is   => 'rw',
+    isa  => 'Bool',
+    default => 1,
+);
 has files => (
     is      => 'rw',
-    isa     => 'HashRef[String]',
+    isa     => 'HashRef[HashRef]',
 );
 
 sub process {
@@ -41,20 +47,34 @@ sub process {
 
     my $match = grep {my $r = $_->regex; $_->enabled && $line =~ /$r/  } @{ $self->regex };
 
-    if ($match) {
+    if ( $match || $self->files->{$file->name}{show} ) {
         if ( $self->end ) {
-            $line .= $self->files->{$file->name};
-            $self->files->{$file->name} = '';
+            $line = "$self->files->{$file->name}{line}$line";
+            $self->files->{$file->name}{line} = '';
         }
         else {
-            my $new_line = $self->files->{$file->name};
-            $self->files->{$file->name} = $line;
+            my $new_line = $self->files->{$file->name}{line};
+            $self->files->{$file->name}{line} = $line;
             $line = $new_line;
         }
+        undef $self->files->{$file->name}{watcher} if !$self->files->{$file->name}{show};
+        undef $self->files->{$file->name}{show};
     }
     else {
-        $self->files->{$file->name} .= $line;
+        $self->files->{$file->name}{line} .= $line;
         $line = undef;
+        if ( !$self->end && !$self->files->{$file->name}{watcher} ) {
+            # create a timer that will cause log lines to be written 2s after
+            # they are first encounted when the match method is on the start of
+            # the line, other wise these lines wont be shown until the next line
+            # is found which may be some time.
+            my $size = $file->size;
+            $self->files->{$file->name}{watcher} = AE::timer 2, 0, sub {
+                $self->allow_empty(1);
+                $self->files->{$file->name}{show} = 1;
+                $file->run() if $file->size >= $size;
+            };
+        }
     }
 
     return defined $line ? ($line) : ();
@@ -71,7 +91,7 @@ plugins treat then as one line.
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::Plugin::GroupLines version 0.1.0.
+This documentation refers to Tail::Tool::Plugin::GroupLines version 0.2.0.
 
 =head1 SYNOPSIS
 

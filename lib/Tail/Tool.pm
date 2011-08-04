@@ -17,7 +17,7 @@ use Data::Dump::Streamer;
 use English qw/ -no_match_vars /;
 use Tail::Tool::File;
 
-our $VERSION     = version->new('0.1.0');
+our $VERSION     = version->new('0.2.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -132,7 +132,7 @@ sub tail {
     for my $file (@{ $self->files }) {
         next if $file->runner;
         $file->runner( sub { $self->run(@_) } );
-        $file->parent($self);
+        $file->tailer($self);
         $file->watch();
         $file->run() if !$no_start;
     }
@@ -150,8 +150,13 @@ sub run {
 
     for my $pre ( @{ $self->pre_process } ) {
         my @new;
-        for my $line (@lines) {
-            push @new, $pre->process($line, $file);
+        if (@lines) {
+            for my $line (@lines) {
+                push @new, $pre->process($line, $file);
+            }
+        }
+        elsif ( $pre->can('allow_empty') && $pre->allow_empty ) {
+            push @new, $pre->process('', $file);
         }
         @lines = @new;
     }
@@ -233,7 +238,7 @@ Tail::Tool - Tool for sophisticated tailing of files
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool version 0.1.0.
+This documentation refers to Tail::Tool version 0.2.0.
 
 
 =head1 SYNOPSIS
