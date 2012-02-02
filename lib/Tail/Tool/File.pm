@@ -14,7 +14,7 @@ use English qw/ -no_match_vars /;
 use Path::Class;
 use AnyEvent;
 
-our $VERSION     = version->new('0.2.0');
+our $VERSION     = version->new('0.3.0');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -134,7 +134,7 @@ sub watch {
         }
     }
     else {
-        $w = AE::timer 0, 2, sub { $self->run };
+        $w = AE::timer 0, 1, sub { $self->run };
     }
 
     $self->watcher($w);
@@ -144,7 +144,6 @@ sub watch {
 
 sub run {
     my ($self, $first) = @_;
-
     $self->runner->($self, $first);
 }
 
@@ -170,9 +169,14 @@ sub get_line {
     }
 
     my @lines = <$fh>;
+
+    # re-check the stat time of the file to make sure that the file has not been rotated
     if ( !$self->remote && !@lines && time > $self->stat_time + $self->stat_period * 60 ) {
         $self->stat_time(time);
-        if ( @{[ stat $fh ]}[1] != @{[ stat $self->name ]}[1] ) {
+        my @stat_file   = stat $self->name;
+        my @stat_handle = stat $fh;
+        # check if the file handle's modified time is not the same as files'
+        if ( $stat_handle[1] != $stat_file[1] ) {
             # close and reopen file incase the file has been rotated
             close $fh;
             $self->_get_file_handle();
@@ -189,7 +193,7 @@ sub _get_file_handle {
         $self->remote(1);
         return if $self->pause;
 
-        my ($user, $host, $port, $file) = $self->name =~ m{^ssh://(?: ([^@]+) [@] )? ( [\w.-]+ ) (?: [:] (\d+) )? / (.*)}xms;
+        my ($user, $host, $port, $file) = $self->name =~ m{^ssh://(?: ([^@]+) [@] )? ( [\w.-]+ ) (?: [:] (\d+) )? / (.*)$}xms;
         if ( !$fh ) {
             my $cmd = sprintf "ssh %s$host %s 'tail -f -n %d %s'",
                ( $user         ? "$user\@"            : '' ),
@@ -197,7 +201,8 @@ sub _get_file_handle {
                ( $self->tailer ? $self->tailer->lines : 10 ),
                _shell_quote($file);
 
-            if ( my $pid = open $fh, '|-', $cmd ) {
+            if ( my $pid = open $fh, '-|', $cmd ) {
+                $fh->blocking(0);
                 $self->pid($pid);
                 $self->handle($fh);
             }
@@ -239,7 +244,7 @@ Tail::Tool::File - Looks after individual files
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::File version 0.2.0.
+This documentation refers to Tail::Tool::File version 0.3.0.
 
 =head1 SYNOPSIS
 
