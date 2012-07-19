@@ -7,6 +7,7 @@ package Tail::Tool::Plugin::Replace;
 # $Revision$, $Source$, $Date$
 
 use Moose;
+use warnings;
 use version;
 use Carp;
 use Scalar::Util;
@@ -32,7 +33,7 @@ sub process {
         if ( $match->enabled ) {
             my $reg = $match->regex;
             my $rep = $match->replace;
-            eval { $line =~ s/$reg/$rep/ };
+            eval { $line =~ s/$reg/eval qq{"$rep"}/e };
         }
     }
 

@@ -27,6 +27,12 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "Pod::Coverage" : 0,
+            "Test::Kwalitee" : 0,
+            "Test::Perl::Critic" : 0,
+            "Test::Spelling" : 0
+         },
          "requires" : {
             "AnyEvent" : 0,
             "Data::Dump::Streamer" : 0,
@@ -54,7 +60,7 @@
    "provides" : {
       "Tail::Tool" : {
          "file" : "lib/Tail/Tool.pm",
-         "version" : "v0.3.1"
+         "version" : "v0.3.2"
       },
       "Tail::Tool::File" : {
          "file" : "lib/Tail/Tool/File.pm",
@@ -113,5 +119,5 @@
          "url" : "git://github.com/ivanwills/Tail-Tool.git"
       }
    },
-   "version" : "v0.3.1"
+   "version" : "v0.3.2"
 }

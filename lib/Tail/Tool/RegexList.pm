@@ -7,6 +7,7 @@ package Tail::Tool::RegexList;
 # $Revision$, $Source$, $Date$
 
 use strict;
+use warnings;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 use version;
@@ -69,6 +70,11 @@ has regex => (
     isa    => 'ArrayRefRegex',
     coerce => 1,
     trigger => \&_set_regex,
+);
+
+has replace => (
+    is     => 'rw',
+    isa    => 'Str',
 );
 
 sub summarise {
