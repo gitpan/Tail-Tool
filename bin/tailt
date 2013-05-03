@@ -20,6 +20,7 @@ use FindBin qw/$Bin/;
 use Path::Class;
 use Tail::Tool;
 use Term::Spinner;
+use Term::ANSIColor qw/colored/;
 use AnyEvent;
 use AnyEvent::Impl::Perl;
 use IO::Prompt qw/prompt/;
@@ -31,7 +32,8 @@ my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 my $spinner = Term::Spinner->new();
 
 my %option = (
-    lines   => 10,
+    lines    => 10,
+    disabled => [],
 );
 my %found_plugins;
 my $restart = {};
@@ -54,6 +56,7 @@ sub main {
             helper  => 1,
         },
         [
+            'disabled|d=s@',
             'restart|r!',
             'lines|n=i',
             'no_inotify|no-inotify!',
@@ -85,6 +88,9 @@ sub main {
     if ( $option{restart} ) {
         $restart->{normal} = AE::io *STDIN, 0, sub {
             my $cmd = <STDIN>;
+
+            return if !$cmd || $cmd =~ /^\s*$/;
+
             chomp $cmd;
 
             exit 0 if lc $cmd eq 'q' || lc $cmd eq 'bye';
@@ -97,11 +103,37 @@ sub main {
         delete $option{restart};
     }
 
+    my %disabled;
+    if ( @{ $option{disabled} } ) {
+        %disabled = (
+            map {
+                $_ => 1
+            }
+            map {
+                @{ get_files($_) }
+            }
+            map {
+                split /[,;]/, $_
+            }
+            @{ $option{disabled} }
+        );
+        push @ARGV, keys %disabled;
+    }
+    delete $option{disabled};
+
     $tt = Tail::Tool->new(
         files => get_files(@ARGV),
         #printer => \&printer,
         %option,
     );
+
+    if ( %disabled ) {
+        for my $file ( @{ $tt->files } ) {
+            if ( $disabled{$file->name} ) {
+                $file->pause(1);
+            }
+        }
+    }
 
     if ( $restore ) {
         push @{ $tt->pre_process }, @{ $restore->{pre_process} }
@@ -119,7 +151,7 @@ sub main {
 
 sub restart {
     print "\n";
-    my $files   = join ', ', map { $_->name } @{ $tt->files };
+    my $files   = join ', ', map { colored( $_->name, $_->pause ? 'red' : 'green' ) } @{ $tt->files };
     my $plugins = '';
     my $i       = 0;
     my %done;
@@ -137,7 +169,7 @@ sub restart {
         $plugins .= "\n" if $plugins;
         $plugins .= sprintf "%2d  %s %s", $i, $name eq $plg ? 'Add' : 'Change', $name;
         if ( ref $plg && $plg->can('summarise') ) {
-            $plugins .= ' (' . $plg->summarise . ')';
+            $plugins .= ' (' . $plg->summarise(1) . ')';
         }
     }
 
@@ -235,7 +267,25 @@ sub get_plugins {
 
 sub update_files {
     my $i = 0;
-    my $files = join "\n", map { sprintf "%2d  Change %s", ++$i, $_->name } @{ $tt->files };
+    my %map_orig = map { $_->name => $i++ } @{ $tt->files };
+    my @files
+        = sort {
+            my $aname = $a->name;
+            my $bname = $b->name;
+            $aname =~ s/(\d+)/sprintf "%05d", $1/egxms;
+            $bname =~ s/(\d+)/sprintf "%05d", $1/egxms;
+            $aname cmp $bname;
+        }
+        @{ $tt->files };
+    $i = 0;
+    my %map_new = map { ++$i => $map_orig{$_->name} } @files;
+    $i = 0;
+    my $files
+        = join "\n",
+        map {
+            sprintf "%2d  Change %s", ++$i, colored( $_->name, $_->pause ? 'red' : 'green' )
+        }
+        @files;
     print <<"MENU";
 
 $files
@@ -256,7 +306,7 @@ MENU
         $tt->tail( 1 );
     }
     else {
-        update_file( $answer - 1 );
+        update_file( $map_new{$answer} );
     }
     return update_files();
 }
@@ -279,6 +329,7 @@ MENU
 
     if ( $answer eq 'p' ) {
         $file->pause( ! $file->pause );
+        $file->watch();
     }
     elsif ( $answer eq 'd' ) {
         my @files = @{ $tt->files };
@@ -544,7 +595,7 @@ sub show_value {
         return "qr/$value/";
     }
     elsif ( eval { $value->can('summarise') } ) {
-        return $value->summarise;
+        return $value->summarise(1);
     }
     else {
         warn "Don't yet display " . ( ref $value ) . " values\n";
@@ -608,7 +659,7 @@ sub plugin_reorder {
         my $name = ref $plugin;
         $name =~ s/^.*:://;
 
-        printf "%2d  %s (%s)\n", ++$i, $name, $plugin->can('summarise') ? $plugin->summarise : '';
+        printf "%2d  %s (%s)\n", ++$i, $name, $plugin->can('summarise') ? $plugin->summarise(1) : '';
     }
 
     return if $1 == 1;
@@ -800,6 +851,10 @@ This documentation refers to tailt version 0.3.0.
                    networked drive it sometimes doesn't fire when a tailed file
                    changes, this option turns off inotify and uses the polling
                    option
+  -d --disable=file
+                   Add the file to the list of files but don't automatically
+                   start tailing it. This can be specified more than once for
+                   multiple disabled files or comma/semi-comma seperated
 
   -v --verbose       Show more detailed option
      --VERSION       Prints the version information
