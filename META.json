@@ -4,7 +4,7 @@
       "Ivan Wills <ivan.wills@gmail.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4001, CPAN::Meta::Converter version 2.110440",
+   "generated_by" : "Module::Build version 0.4001, CPAN::Meta::Converter version 2.112621",
    "license" : [
       "perl_5"
    ],
@@ -35,6 +35,7 @@
          },
          "requires" : {
             "AnyEvent" : 0,
+            "AnyEvent::Impl::Perl" : 0,
             "Data::Dump::Streamer" : 0,
             "Getopt::Alt" : 0,
             "IO::Prompt" : 0,
@@ -60,7 +61,7 @@
    "provides" : {
       "Tail::Tool" : {
          "file" : "lib/Tail/Tool.pm",
-         "version" : "v0.3.3"
+         "version" : "v0.3.4"
       },
       "Tail::Tool::File" : {
          "file" : "lib/Tail/Tool/File.pm",
@@ -116,9 +117,8 @@
          "http://dev.perl.org/licenses/"
       ],
       "repository" : {
-         "type" : "git",
          "url" : "git://github.com/ivanwills/Tail-Tool.git"
       }
    },
-   "version" : "v0.3.3"
+   "version" : "v0.3.4"
 }

@@ -7,6 +7,7 @@ WriteMakefile
   'VERSION_FROM' => 'lib/Tail/Tool.pm',
   'PREREQ_PM' => {
                    'AnyEvent' => 0,
+                   'AnyEvent::Impl::Perl' => 0,
                    'Data::Dump::Streamer' => 0,
                    'Getopt::Alt' => 0,
                    'IO::Prompt' => 0,
@@ -31,8 +32,7 @@ WriteMakefile
                  },
   'INSTALLDIRS' => 'site',
   'EXE_FILES' => [
-                   'bin/tailt',
-                   'bin/tailt~'
+                   'bin/tailt'
                  ],
   'PL_FILES' => {}
 )
