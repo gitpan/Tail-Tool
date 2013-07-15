@@ -22,12 +22,12 @@ use Tail::Tool;
 use Term::Spinner;
 use Term::ANSIColor qw/colored/;
 use AnyEvent;
-use AnyEvent::Impl::Perl;
+use AnyEvent::Loop;
 use IO::Prompt qw/prompt/;
 use TryCatch;
 use YAML qw/LoadFile DumpFile Dump/;
 
-our $VERSION = version->new('0.3.0');
+our $VERSION = version->new('0.3.5');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 my $spinner = Term::Spinner->new();
 
@@ -39,10 +39,6 @@ my %found_plugins;
 my $restart = {};
 my $tt;
 my $config_file = file("$ENV{HOME}/.tailtrc");
-
-if ( !@ARGV ) {
-    pod2usage( -verbose => 1 );
-}
 
 main();
 exit 0;
@@ -69,7 +65,7 @@ sub main {
             'verbose|v+',
         ]
     );
-    %option = %{ $opt->opt };
+    %option = %{ $opt };
 
     # do stuff here
     for my $key (qw/Highlight Match Ignore Replace/) {
@@ -144,7 +140,14 @@ sub main {
 
     $tt->tail();
 
-    AnyEvent::Impl::Perl::loop;
+    my $w = AE::timer 1, 1, sub {
+        my $count = 0;
+        for my $file (@{ $tt->files }) {
+            $count++ if $file->watcher;
+        }
+        exit if $count == 0;
+    };
+    AnyEvent::Loop::run;
 
     return;
 }
@@ -779,7 +782,7 @@ sub get_files {
             :                     glob($file);
     }
 
-    return \@all;
+    return @all ? \@all : ['-'];
 }
 
 # converts host ranges to actual host names
@@ -831,7 +834,7 @@ tailt - Tail files using the Tail::Tool library
 
 =head1 VERSION
 
-This documentation refers to tailt version 0.3.0.
+This documentation refers to tailt version 0.3.5.
 
 =head1 SYNOPSIS
 

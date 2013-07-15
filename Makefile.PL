@@ -8,8 +8,9 @@ WriteMakefile
   'PREREQ_PM' => {
                    'AnyEvent' => 0,
                    'AnyEvent::Impl::Perl' => 0,
+                   'AnyEvent::Loop' => 0,
                    'Data::Dump::Streamer' => 0,
-                   'Getopt::Alt' => 0,
+                   'Getopt::Alt' => '0.001001',
                    'IO::Prompt' => 0,
                    'List::MoreUtils' => 0,
                    'List::Util' => 0,

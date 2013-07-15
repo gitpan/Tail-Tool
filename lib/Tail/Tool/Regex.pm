@@ -13,7 +13,7 @@ use Moose::Util::TypeConstraints;
 use English qw/ -no_match_vars /;
 use Term::ANSIColor qw/colored/;
 
-our $VERSION = version->new('0.3.0');
+our $VERSION = version->new('0.3.5');
 
 coerce 'RegexpRef'
     => from 'Str'
@@ -59,7 +59,7 @@ sub summarise {
 
     if ( !$self->enabled ) {
         $text =
-            $term ? colored( "[$text]", 'bold' )
+            $term ? colored( "[$text]", 'reverse' )
             :       $text . ', disabled';
     }
 
@@ -76,7 +76,7 @@ Tail::Tool::Regex - Base class for regex details
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::Regex version 0.3.0.
+This documentation refers to Tail::Tool::Regex version 0.3.5.
 
 =head1 SYNOPSIS
 

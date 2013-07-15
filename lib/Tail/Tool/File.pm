@@ -10,12 +10,13 @@ use Moose;
 use warnings;
 use version;
 use Carp;
+use Scalar::Util qw/openhandle/;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use Path::Class;
 use AnyEvent;
 
-our $VERSION     = version->new('0.3.0');
+our $VERSION     = version->new('0.3.5');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -75,6 +76,7 @@ has no_inotify => (
 has watcher => (
     is            => 'rw',
     init_arg      => undef,
+    clearer       => 'clear_watcher',
     documentation => 'This is the event watcher ojbect handle',
 );
 has runner => (
@@ -129,11 +131,16 @@ sub watch {
     }
 
     my $w;
-    if ( !$self->remote  && $inotify && !$self->no_inotify ) {
+    if ( $self->name ne '-' && !$self->remote  && $inotify && !$self->no_inotify ) {
         $w = $inotify->watch( $self->name, Linux::Inotify2::IN_ALL_EVENTS(), sub { $self->run } );
         if ( !$watcher ) {
             $watcher = AE::io $inotify->fileno, 0, sub { $inotify->poll };
         }
+    }
+    elsif ( $self->name eq '-' ) {
+        $self->started(1);
+        $w = AE::io \*STDIN, 0, sub { $self->run };
+        # TODO work out how to end if STDIN closed
     }
     else {
         $w = AE::timer 0, 1, sub { $self->run };
@@ -175,10 +182,11 @@ sub get_line {
     # re-check the stat time of the file to make sure that the file has not been rotated
     if ( !$self->remote && !@lines && time > $self->stat_time + $self->stat_period * 60 ) {
         $self->stat_time(time);
+        # TODO why is this being run if the file has finished? Should not be run for STDIN reading
         my @stat_file   = stat $self->name;
         my @stat_handle = stat $fh;
         # check if the file handle's modified time is not the same as files'
-        if ( $stat_handle[1] != $stat_file[1] ) {
+        if ( !defined $stat_handle[1] || !defined $stat_file[1] || $stat_handle[1] != $stat_file[1] ) {
             # close and reopen file incase the file has been rotated
             close $fh;
             $self->_get_file_handle();
@@ -191,6 +199,16 @@ sub _get_file_handle {
     my ($self) = @_;
 
     my $fh = $self->handle;
+    if ( $self->name eq '-' ) {
+        if ( !$fh ) {
+            $self->handle(\*STDIN);
+        }
+        elsif ( !openhandle($fh) ) {
+            $self->clear_watcher;
+        }
+        return $self->handle;
+    }
+
     if ( $self->remote || $self->name =~ m{^ssh://}xms ) {
         $self->remote(1);
         return if $self->pause;
@@ -246,7 +264,7 @@ Tail::Tool::File - Looks after individual files
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::File version 0.3.0.
+This documentation refers to Tail::Tool::File version 0.3.5.
 
 =head1 SYNOPSIS
 
