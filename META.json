@@ -4,7 +4,7 @@
       "Ivan Wills <ivan.wills@gmail.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4001, CPAN::Meta::Converter version 2.131560",
+   "generated_by" : "Module::Build version 0.4204",
    "license" : [
       "perl_5"
    ],
@@ -62,51 +62,51 @@
    "provides" : {
       "Tail::Tool" : {
          "file" : "lib/Tail/Tool.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::File" : {
          "file" : "lib/Tail/Tool/File.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Plugin::GroupLines" : {
          "file" : "lib/Tail/Tool/Plugin/GroupLines.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Plugin::Highlight" : {
          "file" : "lib/Tail/Tool/Plugin/Highlight.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Plugin::Ignore" : {
          "file" : "lib/Tail/Tool/Plugin/Ignore.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Plugin::Match" : {
          "file" : "lib/Tail/Tool/Plugin/Match.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Plugin::Replace" : {
          "file" : "lib/Tail/Tool/Plugin/Replace.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Plugin::Spacing" : {
          "file" : "lib/Tail/Tool/Plugin/Spacing.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::PostProcess" : {
          "file" : "lib/Tail/Tool/PostProcess.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::PreProcess" : {
          "file" : "lib/Tail/Tool/PreProcess.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::Regex" : {
          "file" : "lib/Tail/Tool/Regex.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       },
       "Tail::Tool::RegexList" : {
          "file" : "lib/Tail/Tool/RegexList.pm",
-         "version" : "v0.3.5"
+         "version" : "v0.3.6"
       }
    },
    "release_status" : "stable",
@@ -121,5 +121,5 @@
          "url" : "git://github.com/ivanwills/Tail-Tool.git"
       }
    },
-   "version" : "v0.3.5"
+   "version" : "v0.3.6"
 }

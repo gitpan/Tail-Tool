@@ -27,7 +27,7 @@ use IO::Prompt qw/prompt/;
 use TryCatch;
 use YAML qw/LoadFile DumpFile Dump/;
 
-our $VERSION = version->new('0.3.5');
+our $VERSION = version->new('0.3.6');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 my $spinner = Term::Spinner->new();
 
@@ -96,7 +96,6 @@ sub main {
             restart();
         };
         $restart->{int} = AE::signal INT => \&restart;
-        delete $option{restart};
     }
 
     my %disabled;
@@ -138,18 +137,23 @@ sub main {
             if @{ $restore->{post_process} || [] };
     }
 
+    my $w;
+    if ( grep { $_->{name} eq '-' } @{ $tt->files } ) {
+        # check that all files have finished if we are looking at STDIN
+        $w = AE::timer 0.1, 0.1, sub {
+            my $count = 0;
+            for my $file (@{ $tt->files }) {
+                $count++ if $file->watcher;
+            }
+            exit if $count == 0;
+        };
+    }
+
     $tt->tail();
 
-    my $w = AE::timer 1, 1, sub {
-        my $count = 0;
-        for my $file (@{ $tt->files }) {
-            $count++ if $file->watcher;
-        }
-        exit if $count == 0;
-    };
     AnyEvent::Loop::run;
 
-    return;
+    return $w;
 }
 
 sub restart {
@@ -834,7 +838,7 @@ tailt - Tail files using the Tail::Tool library
 
 =head1 VERSION
 
-This documentation refers to tailt version 0.3.5.
+This documentation refers to tailt version 0.3.6.
 
 =head1 SYNOPSIS
 

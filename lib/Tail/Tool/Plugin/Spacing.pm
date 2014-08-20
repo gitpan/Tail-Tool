@@ -18,7 +18,7 @@ use English qw/ -no_match_vars /;
 
 extends 'Tail::Tool::PreProcess';
 
-our $VERSION     = version->new('0.3.5');
+our $VERSION     = version->new('0.3.6');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -93,12 +93,11 @@ __END__
 
 =head1 NAME
 
-Tail::Tool::Plugin::Spacing - Prints spaces when there has been a pause in
-running.
+Tail::Tool::Plugin::Spacing - Prints spaces when there has been a pause in running.
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::Plugin::Spacing version 0.3.5.
+This documentation refers to Tail::Tool::Plugin::Spacing version 0.3.6.
 
 =head1 SYNOPSIS
 

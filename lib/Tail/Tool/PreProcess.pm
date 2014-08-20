@@ -17,7 +17,7 @@ use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 
 
-our $VERSION     = version->new('0.3.5');
+our $VERSION     = version->new('0.3.6');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -42,12 +42,11 @@ __END__
 
 =head1 NAME
 
-Tail::Tool::PreProcess - Parent module for Plugins that perform pre-processing
-tasks on tailed lines. eg filtering
+Tail::Tool::PreProcess - Parent module for Plugins that perform pre-processing tasks on tailed lines. eg filtering
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::PreProcess version 0.3.5.
+This documentation refers to Tail::Tool::PreProcess version 0.3.6.
 
 
 =head1 SYNOPSIS

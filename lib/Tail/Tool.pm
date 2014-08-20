@@ -18,7 +18,7 @@ use Data::Dump::Streamer;
 use English qw/ -no_match_vars /;
 use Tail::Tool::File;
 
-our $VERSION     = version->new('0.3.5');
+our $VERSION     = version->new('0.3.6');
 our @EXPORT_OK   = qw//;
 our %EXPORT_TAGS = ();
 #our @EXPORT      = qw//;
@@ -75,14 +75,17 @@ around BUILDARGS => sub {
         next if $key eq 'post_process' || $key eq 'pre_process';
 
         if ( $key eq 'files' ) {
-            my @extra = ( no_inotify => $param{no_inotify} );
+            my @extra = (
+                no_inotify => $param{no_inotify},
+                restart    => $param{restart},
+            );
             for my $file ( @{ $param{$key} } ) {
                 $file = Tail::Tool::File->new(
                     ref $file ? $file : ( name => $file, @extra )
                 );
             }
         }
-        elsif ( $key eq 'lines' || $key eq 'printer' || $key eq 'no_inotify' ) {
+        elsif ( $key eq 'lines' || $key eq 'printer' || $key eq 'no_inotify' || $key eq 'restart' ) {
         }
         else {
             my $plg = _new_plugin( $key, $param{$key} );
@@ -239,7 +242,7 @@ Tail::Tool - Tool for sophisticated tailing of files
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool version 0.3.5.
+This documentation refers to Tail::Tool version 0.3.6.
 
 
 =head1 SYNOPSIS
