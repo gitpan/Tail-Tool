@@ -9,18 +9,9 @@ package Tail::Tool::PostProcess;
 use Moose;
 use warnings;
 use version;
-use Carp;
-use Scalar::Util;
-use List::Util;
-#use List::MoreUtils;
-use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 
-
-our $VERSION     = version->new('0.3.6');
-our @EXPORT_OK   = qw//;
-our %EXPORT_TAGS = ();
-#our @EXPORT      = qw//;
+our $VERSION = version->new('0.4.0');
 
 has post => (
     is       => 'ro',
@@ -45,7 +36,7 @@ Tail::Tool::PostProcess - The parent module for plugins that change individual l
 
 =head1 VERSION
 
-This documentation refers to Tail::Tool::PostProcess version 0.3.6.
+This documentation refers to Tail::Tool::PostProcess version 0.4.0.
 
 =head1 SYNOPSIS
 

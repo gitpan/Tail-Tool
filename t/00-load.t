@@ -2,8 +2,8 @@
 
 use strict;
 use warnings;
-use Test::More tests => 12 + 1;
-use Test::NoWarnings;
+use Test::More;
+use Test::Warnings;
 
 BEGIN {
     use_ok( 'Tail::Tool'                    );
@@ -21,3 +21,4 @@ BEGIN {
 }
 
 diag( "Testing Tail::Tool $Tail::Tool::VERSION, Perl $], $^X" );
+done_testing;

@@ -2,8 +2,8 @@
 
 use strict;
 use warnings;
-use Test::More tests => 3 + 1;
-use Test::NoWarnings;
+use Test::More;
+use Test::Warnings;
 
 sub not_in_file_ok {
     my ($filename, %regex) = @_;
@@ -37,7 +37,7 @@ sub module_boilerplate_ok {
     );
 }
 
-not_in_file_ok(README =>
+not_in_file_ok((-f 'README' ? 'README' : 'README.pod') =>
     "The README is used..."       => qr/The README is used/,
     "'version information here'"  => qr/to provide version information/,
 );
@@ -46,5 +46,17 @@ not_in_file_ok(Changes =>
     "placeholder date/time"       => qr(Date/time)
 );
 
+module_boilerplate_ok('bin/tailt');
 module_boilerplate_ok('lib/Tail/Tool.pm');
-
+module_boilerplate_ok('lib/Tail/Tool/File.pm');
+module_boilerplate_ok('lib/Tail/Tool/Plugin/GroupLines.pm');
+module_boilerplate_ok('lib/Tail/Tool/Plugin/Highlight.pm');
+module_boilerplate_ok('lib/Tail/Tool/Plugin/Ignore.pm');
+module_boilerplate_ok('lib/Tail/Tool/Plugin/Match.pm');
+module_boilerplate_ok('lib/Tail/Tool/Plugin/Replace.pm');
+module_boilerplate_ok('lib/Tail/Tool/Plugin/Spacing.pm');
+module_boilerplate_ok('lib/Tail/Tool/PostProcess.pm');
+module_boilerplate_ok('lib/Tail/Tool/PreProcess.pm');
+module_boilerplate_ok('lib/Tail/Tool/Regex.pm');
+module_boilerplate_ok('lib/Tail/Tool/RegexList.pm');
+done_testing();
