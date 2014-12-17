@@ -10,22 +10,17 @@ use strict;
 use warnings;
 use version;
 use Getopt::Alt qw/get_options/;
-use Pod::Usage;
 use English qw/ -no_match_vars /;
-use FindBin qw/$Bin/;
 use Path::Tiny;
 use Tail::Tool;
-use Term::Spinner;
-use Term::ANSIColor qw/colored/;
 use AnyEvent;
 use AnyEvent::Loop;
-use IO::Prompt qw/prompt/;
 use TryCatch;
 use YAML qw/LoadFile DumpFile Dump/;
+use File::HomeDir;
 
-our $VERSION = version->new('0.4.0');
+our $VERSION = version->new('0.4.1');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
-my $spinner  = Term::Spinner->new();
 
 my %option = (
     lines    => 10,
@@ -34,7 +29,7 @@ my %option = (
 my %found_plugins;
 my $restart = {};
 my $tt;
-my $config_file = path("$ENV{HOME}/.tailtrc");
+my $config_file = path(File::HomeDir->my_home, '.tailtrc');
 
 main();
 exit 0;
@@ -225,8 +220,15 @@ MENU
     return restart();
 }
 
+my $spinner;
 sub printer {
     my @lines = @_;
+
+    if ( !$spinner ) {
+        require Term::Spinner;
+        $spinner = Term::Spinner->new();
+    }
+
     if (@lines) {
         $spinner->advance;
     }
@@ -826,6 +828,16 @@ sub get_hosts {
     return @hosts;
 }
 
+sub prompt {
+    require IO::Prompt;
+    return IO::Prompt::prompt(@_);
+}
+
+sub colored {
+    require Term::ANSIColor;
+    return Term::ANSIColor::colored(@_);
+}
+
 __DATA__
 
 =head1 NAME
@@ -834,7 +846,7 @@ tailt - Tail files using the Tail::Tool library
 
 =head1 VERSION
 
-This documentation refers to tailt version 0.4.0.
+This documentation refers to tailt version 0.4.1.
 
 =head1 SYNOPSIS
 
